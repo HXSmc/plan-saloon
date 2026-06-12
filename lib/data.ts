@@ -174,12 +174,33 @@ export function upcomingDates(days = 14, from: Date = new Date()): string[] {
   return out;
 }
 
+// Fixed slot length (minutes) for the whole shop. Slot startTime is the booking key.
+export const SLOT_MINUTES = 45;
+
+export type Slot = { value: string; label: string };
+
+// Formats minutes-from-midnight → 24h "HH:MM" value + 12h "h:MM AM/PM" label.
+function minutesToSlot(m: number): Slot {
+  const mod = ((m % 1440) + 1440) % 1440;
+  const h24 = Math.floor(mod / 60);
+  const min = mod % 60;
+  const period = h24 >= 12 ? "PM" : "AM";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return {
+    value: `${String(h24).padStart(2, "0")}:${String(min).padStart(2, "0")}`,
+    label: `${h12}:${String(min).padStart(2, "0")} ${period}`,
+  };
+}
+
 /**
- * Generates bookable time-slot labels (e.g. "10:30 AM") for a given date,
- * stepping by the service duration within that day's opening hours.
- * Client-side only for Pass 1 — no availability lookup yet.
+ * Generates bookable {value,label} slots for a date, stepping by SLOT_MINUTES
+ * within that day's opening hours. A `close` of "00:00" means midnight (end of
+ * day) — treated as 1440 so the final evening slots are produced.
  */
-export function slotsForDate(dateStr: string, durationMin = 30): string[] {
+export function slotsForDate(
+  dateStr: string,
+  durationMin = SLOT_MINUTES
+): Slot[] {
   const date = new Date(dateStr + "T00:00:00");
   const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
   const entry = hours.find((h) => h.day === dayName);
@@ -188,16 +209,12 @@ export function slotsForDate(dateStr: string, durationMin = 30): string[] {
   const [openH, openM] = entry.open.split(":").map(Number);
   const [closeH, closeM] = entry.close.split(":").map(Number);
   const start = openH * 60 + openM;
-  const end = closeH * 60 + closeM;
-  const step = Math.max(15, durationMin);
+  let end = closeH * 60 + closeM;
+  if (end <= start) end += 1440; // "00:00" / past-midnight close
 
-  const slots: string[] = [];
-  for (let m = start; m + durationMin <= end; m += step) {
-    const h24 = Math.floor(m / 60);
-    const min = m % 60;
-    const period = h24 >= 12 ? "PM" : "AM";
-    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-    slots.push(`${h12}:${String(min).padStart(2, "0")} ${period}`);
+  const slots: Slot[] = [];
+  for (let m = start; m + durationMin <= end; m += durationMin) {
+    slots.push(minutesToSlot(m));
   }
   return slots;
 }

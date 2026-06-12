@@ -87,6 +87,7 @@ const en: Dict = {
   "book.cal.title": "Choose a date & time",
   "book.cal.subcopy": "Pick a day, then grab an open slot.",
   "book.cal.selectDate": "Select a date to see available times.",
+  "book.cal.noSlots": "No open times left for this day. Try another date.",
 
   // Booking — info step
   "book.info.title": "Your details",
@@ -100,16 +101,22 @@ const en: Dict = {
   "book.err.email": "Enter a valid email.",
 
   // Booking — confirm step
+  "book.done.submitting": "Securing your slot…",
   "book.done.title": "You're booked!",
   "book.done.subA": "A confirmation is on its way to",
+  "book.done.subPhone": "We'll text your confirmation shortly.",
   "book.done.row.service": "Service",
   "book.done.row.barber": "Barber",
   "book.done.row.when": "When",
   "book.done.row.name": "Name",
   "book.done.at": "at",
-  "book.done.demo": "Demo booking — not yet saved to a server.",
   "book.done.another": "Book Another",
   "book.done.done": "Done",
+  "book.err.title": "Something went wrong",
+  "book.err.body": "We couldn't complete your booking. Please try again.",
+  "book.err.conflictTitle": "Slot just taken",
+  "book.err.conflictBody": "Someone grabbed that time. Pick another slot.",
+  "book.err.pickAnother": "Pick another time",
 };
 
 const ar: Dict = {
@@ -194,6 +201,7 @@ const ar: Dict = {
   "book.cal.title": "اختر التاريخ والوقت",
   "book.cal.subcopy": "اختر يومًا، ثم احجز موعدًا متاحًا.",
   "book.cal.selectDate": "اختر تاريخًا لعرض الأوقات المتاحة.",
+  "book.cal.noSlots": "لا توجد أوقات متاحة لهذا اليوم. جرّب تاريخًا آخر.",
 
   // Booking — info step
   "book.info.title": "بياناتك",
@@ -207,16 +215,22 @@ const ar: Dict = {
   "book.err.email": "أدخل بريدًا إلكترونيًا صحيحًا.",
 
   // Booking — confirm step
+  "book.done.submitting": "نؤكّد حجز موعدك…",
   "book.done.title": "تم حجزك!",
   "book.done.subA": "تأكيد الحجز في طريقه إلى",
+  "book.done.subPhone": "سنرسل تأكيد الحجز عبر رسالة قريبًا.",
   "book.done.row.service": "الخدمة",
   "book.done.row.barber": "الحلّاق",
   "book.done.row.when": "الموعد",
   "book.done.row.name": "الاسم",
   "book.done.at": "الساعة",
-  "book.done.demo": "حجز تجريبي — لم يُحفظ على الخادم بعد.",
   "book.done.another": "احجز موعدًا آخر",
   "book.done.done": "تم",
+  "book.err.title": "حدث خطأ ما",
+  "book.err.body": "تعذّر إتمام الحجز. يرجى المحاولة مرة أخرى.",
+  "book.err.conflictTitle": "الموعد محجوز للتو",
+  "book.err.conflictBody": "حجز أحدهم هذا الوقت. اختر موعدًا آخر.",
+  "book.err.pickAnother": "اختر وقتًا آخر",
 };
 
 export const dict: Record<Lang, Dict> = { en, ar };

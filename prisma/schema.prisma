@@ -1,0 +1,115 @@
+// Action Plan Barbershop — data model.
+// SQLite for zero-setup local dev; Postgres-ready (swap `provider` + DATABASE_URL,
+// no model changes). SQLite has no enums/arrays — statuses are String unions
+// (see lib/types.ts) and list fields are JSON strings.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("BARBER") // "OWNER" | "BARBER"
+  barberId     String?  @unique
+  barber       Barber?  @relation(fields: [barberId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+}
+
+model Barber {
+  id          String   @id @default(cuid())
+  name        String
+  name_ar     String
+  title       String
+  title_ar    String
+  bio         String
+  bio_ar      String
+  initials    String
+  imageUrl    String?
+  phone       String?
+  active      Boolean  @default(true)
+  specialties String   @default("[]") // JSON string of EN specialties
+  specialties_ar String @default("[]") // JSON string of AR specialties
+  createdAt   DateTime @default(now())
+
+  user         User?
+  services     BarberService[]
+  workingHours WorkingHours[]
+  timeOff      TimeOff[]
+  appointments Appointment[]
+}
+
+model Service {
+  id             String   @id @default(cuid())
+  name           String
+  name_ar        String
+  description    String
+  description_ar String
+  price          Int
+  icon           String   @default("✂️")
+  popular        Boolean  @default(false)
+  durationMin    Int      @default(45)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  barbers      BarberService[]
+  appointments Appointment[]
+}
+
+model BarberService {
+  barberId  String
+  serviceId String
+  barber    Barber  @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([barberId, serviceId])
+}
+
+model WorkingHours {
+  id       String  @id @default(cuid())
+  barberId String
+  barber   Barber  @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  weekday  Int // 0 = Sunday ... 6 = Saturday
+  startMin Int // minutes from midnight
+  endMin   Int // minutes from midnight (1440 = end of day)
+  isOff    Boolean @default(false)
+
+  @@unique([barberId, weekday])
+}
+
+model TimeOff {
+  id       String   @id @default(cuid())
+  barberId String
+  barber   Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  start    DateTime
+  end      DateTime
+  reason   String?
+}
+
+model Appointment {
+  id            String   @id @default(cuid())
+  customerName  String
+  customerPhone String
+  customerEmail String?
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [id])
+  barberId      String
+  barber        Barber   @relation(fields: [barberId], references: [id])
+  startTime     DateTime
+  endTime       DateTime
+  status        String   @default("CONFIRMED") // PENDING|CONFIRMED|COMPLETED|NO_SHOW|CANCELLED
+  revenue       Int      @default(0)
+  source        String   @default("ONLINE") // ONLINE | WALK_IN
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // DB-level double-booking guard: one barber cannot hold two appts at one start.
+  @@unique([barberId, startTime])
+  @@index([startTime])
+}

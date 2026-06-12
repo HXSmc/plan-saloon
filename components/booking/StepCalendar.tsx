@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { localeFor, services, slotsForDate, upcomingDates } from "@/lib/data";
+import { useEffect, useMemo, useState } from "react";
+import { localeFor, upcomingDates, type Slot } from "@/lib/data";
 import { useBooking } from "./BookingContext";
 import { useLang } from "../i18n/LanguageContext";
 import GlowButton from "../GlowButton";
@@ -12,12 +12,28 @@ export default function StepCalendar() {
   const locale = localeFor(lang);
 
   const dates = useMemo(() => upcomingDates(14), []);
-  const duration =
-    services.find((s) => s.id === state.serviceId)?.durationMin ?? 30;
-  const slots = useMemo(
-    () => (state.date ? slotsForDate(state.date, duration) : []),
-    [state.date, duration]
-  );
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch live availability whenever the date (or chosen barber) changes.
+  useEffect(() => {
+    if (!state.date) {
+      setSlots([]);
+      return;
+    }
+    let alive = true;
+    setLoading(true);
+    const qs = new URLSearchParams({ date: state.date });
+    if (state.barberId) qs.set("barberId", state.barberId);
+    fetch(`/api/availability?${qs.toString()}`)
+      .then((r) => r.json())
+      .then((data) => alive && setSlots(data.slots ?? []))
+      .catch(() => alive && setSlots([]))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [state.date, state.barberId]);
 
   return (
     <div className="animate-fade-up">
@@ -41,7 +57,7 @@ export default function StepCalendar() {
           return (
             <button
               key={d}
-              onClick={() => set({ date: d, time: null })}
+              onClick={() => set({ date: d, time: null, timeLabel: null })}
               className={`flex shrink-0 flex-col items-center rounded-lg border px-4 py-3 transition-all duration-200 ${
                 selected
                   ? "border-neon-yellow bg-neon-yellow/10 shadow-glow-yellow"
@@ -71,21 +87,31 @@ export default function StepCalendar() {
             {t("book.cal.selectDate")}
           </p>
         )}
-        {state.date && (
+        {state.date && loading && (
+          <p className="font-body text-sm text-cream-dim">…</p>
+        )}
+        {state.date && !loading && slots.length === 0 && (
+          <p className="font-body text-sm text-cream-dim">
+            {t("book.cal.noSlots")}
+          </p>
+        )}
+        {state.date && !loading && slots.length > 0 && (
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {slots.map((t) => {
-              const selected = state.time === t;
+            {slots.map((slot) => {
+              const selected = state.time === slot.value;
               return (
                 <button
-                  key={t}
-                  onClick={() => set({ time: t })}
+                  key={slot.value}
+                  onClick={() =>
+                    set({ time: slot.value, timeLabel: slot.label })
+                  }
                   className={`rounded-md border py-2 font-label text-xs tracking-wide transition-all duration-200 ${
                     selected
                       ? "border-neon-yellow bg-neon-yellow text-charcoal-deep shadow-glow-yellow"
                       : "border-white/10 text-cream hover:border-neon-yellow/60 hover:text-neon-yellow"
                   }`}
                 >
-                  {t}
+                  {slot.label}
                 </button>
               );
             })}

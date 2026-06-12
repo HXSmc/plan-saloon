@@ -1,13 +1,14 @@
 "use client";
 
-import { barbers, barberName, barberTitle } from "@/lib/data";
 import { useBooking } from "./BookingContext";
 import { useLang } from "../i18n/LanguageContext";
+import { useCatalog } from "./useCatalog";
 import GlowButton from "../GlowButton";
 
 export default function StepBarber() {
   const { state, set, next, back } = useBooking();
   const { t, lang } = useLang();
+  const { barbers } = useCatalog();
 
   const choose = (barberId: string | null) => {
     set({ barberId });
@@ -62,10 +63,10 @@ export default function StepBarber() {
               </span>
               <span>
                 <span className="block font-display font-bold text-cream">
-                  {barberName(b, lang)}
+                  {lang === "ar" ? b.name_ar : b.name}
                 </span>
                 <span className="block font-body text-xs text-cream-dim">
-                  {barberTitle(b, lang)}
+                  {lang === "ar" ? b.title_ar : b.title}
                 </span>
               </span>
             </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  barbers,
+  barbers as seedBarbers,
   barberName,
   barberTitle,
   barberBio,
@@ -9,11 +9,15 @@ import {
 } from "@/lib/data";
 import { useBooking } from "./booking/BookingContext";
 import { useLang } from "./i18n/LanguageContext";
+import { useCatalog } from "./booking/useCatalog";
 import GlowButton from "./GlowButton";
 
 export default function Team() {
   const { open } = useBooking();
   const { t, lang } = useLang();
+  const { barbers: live } = useCatalog();
+  // Live DB barbers (admin-managed); fall back to the seed for instant paint.
+  const barbers = live.length ? live : seedBarbers;
 
   return (
     <section id="team" className="relative bg-charcoal py-24">

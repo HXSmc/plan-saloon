@@ -1,12 +1,16 @@
 "use client";
 
-import { services, svcName, svcDesc } from "@/lib/data";
+import { services as seedServices, svcName, svcDesc } from "@/lib/data";
 import { useBooking } from "./booking/BookingContext";
 import { useLang } from "./i18n/LanguageContext";
+import { useCatalog } from "./booking/useCatalog";
 
 export default function Services() {
   const { open } = useBooking();
   const { t, lang } = useLang();
+  const { services: live } = useCatalog();
+  // Live DB services (admin-managed); fall back to the seed for instant paint.
+  const services = live.length ? live : seedServices;
 
   return (
     <section id="services" className="relative bg-charcoal py-24">

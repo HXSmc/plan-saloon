@@ -16,7 +16,8 @@ export type BookingState = {
   serviceId: string | null;
   barberId: string | null; // null === "First Available"
   date: string | null; // YYYY-MM-DD
-  time: string | null; // e.g. "10:30 AM"
+  time: string | null; // 24h slot value, e.g. "22:30" (sent to API)
+  timeLabel: string | null; // display label, e.g. "10:30 PM"
   contact: ContactInfo;
 };
 
@@ -40,6 +41,7 @@ const emptyState: BookingState = {
   barberId: null,
   date: null,
   time: null,
+  timeLabel: null,
   contact: { name: "", phone: "", email: "" },
 };
 
