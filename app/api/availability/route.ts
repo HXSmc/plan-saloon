@@ -8,8 +8,9 @@ export async function GET(req: NextRequest) {
   const barberId = searchParams.get("barberId");
   const serviceId = searchParams.get("serviceId");
   // Manage-page reschedule: exclude the customer's own booking (proven by its
-  // unguessable token) so it doesn't block its own new time.
-  const excludeToken = searchParams.get("excludeToken");
+  // unguessable token) so it doesn't block its own new time. Sent as a header
+  // so the token never appears in URLs / access logs.
+  const excludeToken = req.headers.get("x-manage-token");
 
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return NextResponse.json(

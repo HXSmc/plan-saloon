@@ -47,8 +47,10 @@ export default function SlotPicker({
     const qs = new URLSearchParams({ date });
     if (barberId) qs.set("barberId", barberId);
     if (serviceId) qs.set("serviceId", serviceId);
-    if (excludeToken) qs.set("excludeToken", excludeToken);
-    fetch(`/api/availability?${qs.toString()}`)
+    // Token travels as a header, not in the URL, to keep it out of access logs.
+    fetch(`/api/availability?${qs.toString()}`, {
+      headers: excludeToken ? { "x-manage-token": excludeToken } : undefined,
+    })
       .then((r) => r.json())
       .then((data) => alive && setSlots(data.slots ?? []))
       .catch(() => alive && setSlots([]))
