@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --charcoal: #16181c;
+  --charcoal-deep: #0e1013;
+  --slate: #22262c;
+  --cream: #f4efe3;
+  --cream-dim: #cfc8b8;
+  --neon-yellow: #ffd11a;
+  --neon-yellow-glow: #ffe35c;
+  --neon-red: #ff3b4e;
+  --neon-blue: #2f7bff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--charcoal-deep);
+  color: var(--cream);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@layer base {
+  /* Subtle stone-grain texture for dark sections. SVG noise inlined. */
+  .texture-stone {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+}
+
+@layer utilities {
+  /* Reusable neon-yellow glow. */
+  .glow-yellow {
+    box-shadow: 0 0 12px rgba(255, 209, 26, 0.55),
+      0 0 28px rgba(255, 209, 26, 0.3);
+  }
+  .glow-text-yellow {
+    text-shadow: 0 0 8px rgba(255, 209, 26, 0.55),
+      0 0 20px rgba(255, 209, 26, 0.35);
+  }
+  /* Warm chandelier glow used behind hero/about. */
+  .amber-glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      60% 50% at 50% 0%,
+      rgba(255, 180, 60, 0.18),
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Eyebrow label style matching the spaced "BARBERSHOP" lettering. */
+.eyebrow {
+  font-family: var(--font-montserrat), var(--font-arabic), system-ui, sans-serif;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+/* Arabic is cursive — letter-spacing breaks glyph joining and uppercase is a
+   no-op. Neutralize both in RTL for clean, readable Arabic. */
+[dir="rtl"] * {
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+[dir="rtl"] .eyebrow {
+  letter-spacing: 0 !important;
+}
