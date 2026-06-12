@@ -23,9 +23,9 @@
 - Shop is in Dammam — all "today"/weekday logic must use Asia/Riyadh (`riyadhToday()`, `todayStr()`), never the visitor's clock
 
 ## Current State (2026-06-12)
-- Full redesign + engine fixes verified: build clean, e2e tested against local Postgres 17 (availability, overlap rejection, past rejection, manage token reschedule/cancel, phone cap, admin guard)
+- Full redesign + engine fixes + post-audit hardening shipped in PR #1 (`feat/booking-engine-redesign` → main): https://github.com/HXSmc/plan-saloon/pull/1
+- Audit fixes included: reschedule self-exclusion (`excludeAppointmentId` / `excludeToken`), serializable transactions on reschedule + admin move, revenue reset on un-complete, interval-overlap admin day query + day-relative calendar positioning, phone normalization parity, stale deep-link guard in BookingFlow, module-level useCatalog cache, barber↔service auto-link on barber create, walk-in phone stored as "" (sentinel removed)
 - WhatsApp notifications deliberately deferred (user request); `NotifyAdapter` interface ready in `lib/notify.ts`, `manageToken` already passed in
-- NOT committed — working tree only
 
 ## Known Issues / TODO
 - Walk-ins without a phone store `customerPhone: "walk-in"` (admin panel hides it)
