@@ -2,33 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Logo from "./Logo";
-import GlowButton from "./GlowButton";
-import { useBooking } from "./booking/BookingContext";
+import LangToggle from "./LangToggle";
+import { GlowLink } from "./GlowButton";
+import { Menu, X } from "./icons";
 import { useLang } from "./i18n/LanguageContext";
 
 const NAV = [
-  { key: "nav.services", href: "#services" },
-  { key: "nav.about", href: "#about" },
-  { key: "nav.team", href: "#team" },
-  { key: "nav.visit", href: "#visit" },
+  { key: "nav.services", href: "/#services" },
+  { key: "nav.about", href: "/#about" },
+  { key: "nav.team", href: "/#team" },
+  { key: "nav.visit", href: "/#visit" },
 ];
 
 export default function Header() {
-  const { open } = useBooking();
-  const { t, toggle, lang } = useLang();
+  const { t } = useLang();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const LangToggle = ({ className = "" }: { className?: string }) => (
-    <button
-      onClick={toggle}
-      aria-label="Switch language"
-      className={`flex items-center gap-1.5 rounded-md border border-white/10 px-3 py-2 font-label text-xs uppercase tracking-widest text-cream-dim transition-colors hover:border-neon-yellow/60 hover:text-neon-yellow ${className}`}
-    >
-      <span aria-hidden>🌐</span>
-      <span>{lang === "en" ? "AR" : "EN"}</span>
-    </button>
-  );
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -46,7 +35,7 @@ export default function Header() {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
-        <a href="#top" aria-label="Action Plan Barbershop home">
+        <a href="/#top" aria-label="Action Plan Barbershop home">
           <Logo size={36} />
         </a>
 
@@ -64,13 +53,9 @@ export default function Header() {
 
         <div className="flex items-center gap-3">
           <LangToggle />
-          <GlowButton
-            size="sm"
-            onClick={() => open()}
-            className="hidden sm:inline-flex"
-          >
+          <GlowLink href="/book" size="sm" className="hidden sm:inline-flex">
             {t("cta.bookNow")}
-          </GlowButton>
+          </GlowLink>
 
           {/* Mobile menu toggle */}
           <button
@@ -79,7 +64,7 @@ export default function Header() {
             aria-expanded={menuOpen}
             className="flex h-10 w-10 items-center justify-center rounded-md border border-white/10 text-cream md:hidden"
           >
-            <span className="text-lg">{menuOpen ? "✕" : "☰"}</span>
+            {menuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </div>
@@ -98,16 +83,9 @@ export default function Header() {
                 {t(item.key)}
               </a>
             ))}
-            <GlowButton
-              size="sm"
-              className="mt-4"
-              onClick={() => {
-                setMenuOpen(false);
-                open();
-              }}
-            >
+            <GlowLink href="/book" size="sm" className="mt-4">
               {t("cta.bookNow")}
-            </GlowButton>
+            </GlowLink>
           </nav>
         </div>
       )}

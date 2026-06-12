@@ -44,8 +44,10 @@ async function main() {
         description_ar: s.description_ar,
         price: s.price,
         icon: s.icon,
+        category: s.category,
+        category_ar: s.category_ar,
         popular: s.popular ?? false,
-        durationMin: 45,
+        durationMin: s.durationMin,
         active: true,
       },
     });

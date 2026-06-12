@@ -2,8 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { fmtMoney, fmtTime, STATUS_STYLES, todayStr } from "@/components/admin/util";
+import {
+  fmtMoney,
+  fmtTime,
+  STATUS_STYLES,
+  todayStr,
+} from "@/components/admin/util";
 import type { AdminAppointment } from "@/components/admin/types";
+import { btn } from "@/components/admin/ui";
+import { Calendar, Check, Clock, Chart } from "@/components/icons";
 
 export default function DashboardPage() {
   const [appts, setAppts] = useState<AdminAppointment[]>([]);
@@ -27,47 +34,67 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const completed = appts.filter((a) => a.status === "COMPLETED").length;
-  const upcoming = appts.filter((a) =>
+  const active = appts.filter((a) => a.status !== "CANCELLED");
+  const completed = active.filter((a) => a.status === "COMPLETED").length;
+  const upcoming = active.filter((a) =>
     ["CONFIRMED", "PENDING"].includes(a.status)
   ).length;
 
   const stats = [
-    { label: "Today's Appointments", value: appts.length },
-    { label: "Upcoming Today", value: upcoming },
-    { label: "Completed Today", value: completed },
+    { label: "Today's Appointments", value: active.length, Icon: Calendar },
+    { label: "Upcoming Today", value: upcoming, Icon: Clock },
+    { label: "Completed Today", value: completed, Icon: Check },
     {
       label: "Revenue Today",
       value: revenue === null ? "—" : fmtMoney(revenue),
+      Icon: Chart,
     },
   ];
 
+  // The next appointment still ahead of us, for the hero strip.
+  const next = active
+    .filter(
+      (a) =>
+        ["CONFIRMED", "PENDING"].includes(a.status) &&
+        new Date(a.startTime).getTime() > Date.now()
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    )[0];
+
   return (
     <div>
-      <header className="mb-8 flex items-center justify-between">
+      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-extrabold">Dashboard</h1>
-          <p className="mt-1 text-sm text-cream-dim">Today at a glance.</p>
+          <p className="mt-1 text-sm text-cream-dim">
+            {next
+              ? `Next up: ${next.customerName} · ${next.service.name} at ${fmtTime(next.startTime)} with ${next.barber.name}`
+              : "Today at a glance."}
+          </p>
         </div>
-        <Link
-          href="/admin/calendar"
-          className="rounded-md bg-neon-yellow px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-charcoal-deep shadow-glow-yellow hover:bg-neon-glow"
-        >
+        <Link href="/admin/calendar" className={btn.primary}>
           Open Calendar
         </Link>
       </header>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {stats.map((s) => (
+        {stats.map(({ label, value, Icon }) => (
           <div
-            key={s.label}
+            key={label}
             className="rounded-xl border border-white/10 bg-charcoal p-5"
           >
-            <div className="font-display text-3xl font-extrabold text-neon-yellow">
-              {s.value}
+            <div className="flex items-center justify-between">
+              <div className="font-display text-3xl font-extrabold text-neon-yellow">
+                {value}
+              </div>
+              <span className="text-cream-dim/40">
+                <Icon size={20} />
+              </span>
             </div>
-            <div className="mt-1 text-[0.62rem] font-semibold uppercase tracking-widest text-cream-dim">
-              {s.label}
+            <div className="mt-1 text-[0.65rem] font-semibold uppercase tracking-widest text-cream-dim">
+              {label}
             </div>
           </div>
         ))}
@@ -79,13 +106,13 @@ export default function DashboardPage() {
         </div>
         {loading ? (
           <p className="px-5 py-8 text-sm text-cream-dim">Loading…</p>
-        ) : appts.length === 0 ? (
+        ) : active.length === 0 ? (
           <p className="px-5 py-8 text-sm text-cream-dim">
             No appointments today.
           </p>
         ) : (
           <ul className="divide-y divide-white/5">
-            {appts.map((a) => (
+            {active.map((a) => (
               <li
                 key={a.id}
                 className="flex items-center justify-between gap-4 px-5 py-3"
@@ -102,7 +129,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <span
-                  className={`rounded-full px-2.5 py-1 text-[0.6rem] font-semibold uppercase tracking-wider ${
+                  className={`rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider ${
                     STATUS_STYLES[a.status] ?? ""
                   }`}
                 >

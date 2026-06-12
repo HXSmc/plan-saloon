@@ -12,6 +12,8 @@ const schema = z.object({
   description_ar: z.string().trim().optional(),
   price: z.number().int().min(0).optional(),
   icon: z.string().optional(),
+  category: z.string().trim().min(1).optional(),
+  category_ar: z.string().trim().min(1).optional(),
   popular: z.boolean().optional(),
   durationMin: z.number().int().min(15).max(240).optional(),
   active: z.boolean().optional(),

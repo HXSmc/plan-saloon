@@ -41,25 +41,18 @@ const config: Config = {
         "glow-red": "0 0 10px rgba(255,59,78,0.6), 0 0 22px rgba(255,59,78,0.4)",
       },
       keyframes: {
-        flicker: {
-          "0%, 100%": { opacity: "1" },
-          "92%": { opacity: "1" },
-          "94%": { opacity: "0.78" },
-          "96%": { opacity: "1" },
-        },
         "fade-up": {
           "0%": { opacity: "0", transform: "translateY(16px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 8px rgba(255,59,78,0.5)" },
-          "50%": { boxShadow: "0 0 16px rgba(255,59,78,0.9)" },
+        "panel-in": {
+          "0%": { transform: "translateX(100%)" },
+          "100%": { transform: "translateX(0)" },
         },
       },
       animation: {
-        flicker: "flicker 4s infinite",
         "fade-up": "fade-up 0.6s ease-out both",
-        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "panel-in": "panel-in 0.25s ease-out both",
       },
     },
   },

@@ -86,9 +86,6 @@ function LoginForm() {
             </button>
           </form>
         </div>
-        <p className="mt-4 text-center text-xs text-cream-dim/60">
-          Default owner: owner@actionplan.sa / changeme
-        </p>
       </div>
     </div>
   );

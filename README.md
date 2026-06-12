@@ -5,7 +5,7 @@ real barbershop — plus a secured **admin dashboard** for the owner and barbers
 business. One Next.js app holds the public site, the booking engine, the REST API, and the
 back-office.
 
-**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS · Prisma + SQLite · Auth.js (v5).
+**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS · Prisma + Postgres (Supabase) · Auth.js (v5).
 
 ---
 
@@ -22,8 +22,8 @@ prices, a live appointment calendar (with walk-in insertion, rescheduling, cance
 arrival check-in), and revenue analytics. Each **barber** gets a scoped view of their own
 calendar and schedule.
 
-Everything is one codebase, runs locally with zero external services (SQLite + console
-notifications), and is production-ready by swapping two env values.
+Everything is one codebase. The database is Postgres (Supabase in production, any local
+Postgres in dev); notifications log to the console until Resend is configured.
 
 ---
 
@@ -51,13 +51,13 @@ names, barber bios, day names) carries `_ar` fields in the database.
 
 ```bash
 npm install            # also runs `prisma generate`
-cp .env.example .env   # then set AUTH_SECRET (openssl rand -base64 32)
-npm run db:push        # create the SQLite schema (prisma/dev.db)
+cp .env.example .env   # set DATABASE_URL/DIRECT_URL (Supabase) + AUTH_SECRET
+npm run db:push        # create the Postgres schema
 npm run db:seed        # seed services, barbers, hours, owner + barber logins
 npm run dev            # http://localhost:3000
 ```
 
-- Customer site + booking: **`/`**
+- Customer site: **`/`** · booking flow: **`/book`** · manage a booking: **`/booking/<token>`**
 - Admin dashboard: **`/admin`**
 
 > `AUTH_SECRET` must be non-empty or login throws `MissingSecret`. Generate one with
@@ -72,27 +72,38 @@ npm run dev            # http://localhost:3000
 ## What's built
 
 ### 1. Customer marketing site (`/`)
-- Sticky header (logo, nav, language toggle, BOOK NOW), full-screen hero, services grid,
-  about/gallery, team, footer with hours + dark-themed map + today's hours highlighted.
+- Sticky header (logo, nav, language toggle, BOOK NOW), full-screen hero with a **live
+  open/closed pill** computed from the published hours, services grouped by **category** with
+  **durations**, about/gallery + Google-reviews link, team (real photos via `imageUrl`, initials
+  fallback), footer with hours + Dammam map + today highlighted (shop-local).
 - **Services** and **Team** grids read **live from the API** (`useCatalog()`), so admin edits and
   active/inactive toggles show up after a reload (seed data is the instant-paint fallback).
-- Reusable `openBooking({ serviceId?, barberId? })` opens the booking modal from any CTA.
+- Every CTA deep-links into the booking page: `/book?service=<id>` / `/book?barber=<id>`.
 
-### 2. Booking flow (5-step modal)
-Service → Barber (or First Available) → Date & Time → Details → Confirmation.
-- Slots come live from `GET /api/availability` — booked / off / out-of-hours times don't appear.
-- Submit calls `POST /api/bookings`; on success shows a neon success badge, on **409** routes
-  back to pick another slot (someone took it first).
+### 2. Booking flow (`/book` — a page, not a popup)
+Service → Barber (or First Available) → Date & Time → Details → Confirmation, with a sticky
+summary rail and a clickable progress bar. Shareable/bookmarkable URL; back button works.
+- Slots come live from `GET /api/availability?date&barberId&serviceId` — **duration-aware**:
+  a 90-min combo only shows starts where the full interval is free, and already-elapsed times
+  never appear (30-min booking lead, shop-local).
+- Submit calls `POST /api/bookings`; success shows the booking summary **plus a private
+  manage link** (`/booking/<token>`) to view / reschedule / cancel — no account needed. The
+  same link is included in the confirmation email. On **409** the flow routes back to pick
+  another slot.
 
 ### 3. Booking engine & API
-- **Public:** `GET /api/services`, `GET /api/barbers`, `GET /api/availability?date&barberId`,
-  `POST /api/bookings`.
-- **Concurrency:** the `Appointment` table has `@@unique([barberId, startTime])`. Two racing
-  bookings for the same barber+time → one succeeds, the other hits Prisma `P2002` → **HTTP 409**.
+- **Public:** `GET /api/services`, `GET /api/barbers`,
+  `GET /api/availability?date&barberId&serviceId`, `POST /api/bookings`,
+  `GET|PATCH /api/bookings/<manageToken>` (reschedule / cancel).
+- **Concurrency:** duration-aware interval overlap check inside a **serializable transaction**,
+  backed by `@@unique([barberId, startTime])` for exact-start races → losers get **HTTP 409**.
+- **Validity:** past/too-soon starts rejected; online bookings must match real availability
+  (working hours − bookings − time off); a phone number may hold at most 3 open bookings.
 - **First Available:** resolved server-side to a concrete free barber before insert.
-- **Scheduling:** fixed **45-minute** slots; shop timezone Asia/Riyadh (+03:00).
+- **Scheduling:** 45-minute slot grid, but services may run longer (`durationMin`) — the engine
+  blocks the full interval. Shop timezone Asia/Riyadh (+03:00).
 - **Shared write path:** `createAppointment()` in `lib/booking.ts` powers both public bookings
-  and admin walk-ins (admins may override published hours).
+  and admin walk-ins (admins may override published hours, never overlap).
 
 ### 4. Notifications
 `lib/notify.ts` is a provider-agnostic pipeline fired after a successful booking. Ships a
@@ -107,14 +118,16 @@ credential check.
 
 ### 6. Admin dashboard (`/admin`)
 - **Dashboard** — today's appointments + quick stats (count, upcoming, completed, revenue).
-- **Calendar** — daily grid (time rows × barber columns). Click an empty slot → insert a
-  **walk-in**; click a booking → **check-in (complete)**, no-show, confirm, cancel, reschedule
-  (time edit), or delete. Same 409 conflict protection.
-- **Staff** — barber CRUD, active/inactive toggle, per-barber **weekly hours** + **time-off**
-  editor, and **login credential management**: set an email + password to create a barber's
-  login, reset it on edit, and the login is removed when the barber is deleted.
-- **Services** — service CRUD (name EN/AR, description EN/AR, price, duration, icon, popular),
-  active toggle.
+- **Calendar** — a **day timeline** (one column per barber, drawn from each barber's real
+  working hours): appointments are positioned by actual start + duration, so off-grid times and
+  long services render true-to-size; time-off shows as hatched blocks; outside-hours is shaded.
+  Click empty space → **walk-in side panel** (time snapped to 15 min); click a booking → side
+  panel with check-in, no-show, cancel (**instant with Undo toast** — no confirm popups),
+  move (time + barber), and a two-step inline delete.
+- **Staff** — list + **full detail pages** (`/admin/staff/<id>`, `/admin/staff/new`): profile
+  EN/AR, photo URL, weekly hours, time-off (with reason), and login credential management.
+- **Services** — side-panel editor (name/description EN/AR, **category EN/AR**, price, duration,
+  **icon picker**, popular), active toggle with Undo.
 - **Analytics** *(owner only)* — total revenue + completed + avg ticket, filterable by
   day / week / month, with **revenue per barber** and **most-booked services** bar charts. Built
   from `COMPLETED` appointments; revenue is captured at check-in from the service price.
@@ -128,15 +141,14 @@ Barbers are **scoped** to their own data (calendar, schedule); owners see everyt
 | Model | Purpose |
 |-------|---------|
 | `User` | Login accounts. `role` OWNER/BARBER, optional `barberId` link. |
-| `Barber` | Profile (EN/AR), `initials`, `phone`, `active`, JSON `specialties`. |
-| `Service` | Menu item (EN/AR), `price`, `durationMin`, `popular`, `active`. |
+| `Barber` | Profile (EN/AR), `initials`, `imageUrl`, `phone`, `active`, JSON `specialties`. |
+| `Service` | Menu item (EN/AR), `price`, `durationMin`, `category` (EN/AR), `popular`, `active`. |
 | `BarberService` | Which services each barber offers (M:N). |
 | `WorkingHours` | Per-barber weekly shift (weekday, start/end minutes, off). |
 | `TimeOff` | Per-barber blocked date ranges. |
-| `Appointment` | Booking: customer, service, barber, start/end, `status`, `revenue`, `source`. **`@@unique([barberId, startTime])`**. |
+| `Appointment` | Booking: customer, service, barber, start/end, `status`, `revenue`, `source`, **`manageToken`** (customer self-service link). **`@@unique([barberId, startTime])`**. |
 
-SQLite has no enums/arrays, so statuses are string unions (`lib/types.ts`) and lists are JSON
-strings.
+Statuses are app-level string unions (`lib/types.ts`); specialty lists are JSON strings.
 
 ---
 
@@ -145,18 +157,21 @@ strings.
 ```
 app/
   layout.tsx, page.tsx, globals.css      # fonts, theme tokens, landing page
+  book/                                   # 5-step booking flow (page, not modal)
+  booking/[token]/                        # customer self-service (view/reschedule/cancel)
   api/
-    services, barbers, availability, bookings   # public booking API
+    services, barbers, availability, bookings (+[token])   # public booking API
     auth/[...nextauth]                           # Auth.js handlers
     admin/                                        # protected admin API
       barbers (+[id], /hours, /timeoff), services, appointments, analytics
   admin/
     layout.tsx, login, page (dashboard), calendar, staff, services, analytics
 components/
-  Header, Hero, Services, About, Team, Footer, Logo, GlowButton
-  booking/   BookingContext, BookingModal, Step{Service,Barber,Calendar,Info,Confirm}, useCatalog
+  Header, Hero, Services, About, Team, Footer, Logo, GlowButton, OpenStatusPill, LangToggle, icons
+  booking/   BookingContext, BookingFlow, SlotPicker, ManageBooking,
+             Step{Service,Barber,Calendar,Info,Confirm}, useCatalog
   i18n/      LanguageContext
-  admin/     Sidebar, util, types
+  admin/     Sidebar, SidePanel, Toast, ui, util, types
 lib/
   db, data, i18n, types, slots, booking, notify, analytics, guard
 auth.ts, auth.config.ts, middleware.ts
@@ -201,10 +216,14 @@ real backend:
 `dev` · `build` · `start` · `db:push` · `db:seed` · `db:studio`
 
 ## Environment (`.env`)
-`DATABASE_URL`, `AUTH_SECRET` (required, non-empty), `ADMIN_EMAIL`, `ADMIN_PASSWORD`,
-optional `RESEND_API_KEY` + `RESEND_FROM`.
+`DATABASE_URL` (Supabase pooled), `DIRECT_URL` (Supabase direct, for `db push`),
+`AUTH_SECRET` (required, non-empty), `NEXT_PUBLIC_SITE_URL` (manage-link base),
+`ADMIN_EMAIL`, `ADMIN_PASSWORD`, optional `RESEND_API_KEY` + `RESEND_FROM`.
 
-## Deploy notes
-SQLite is for local/dev. For production, point `DATABASE_URL` at Postgres and change the Prisma
-datasource `provider` to `postgresql` — no model changes needed. Set a strong `AUTH_SECRET` and a
-real notification provider before going live.
+## Deploy notes (Supabase)
+1. Create a Supabase project → copy the **pooled** (6543) and **direct** (5432) connection
+   strings into `DATABASE_URL` / `DIRECT_URL`.
+2. `npm run db:push && npm run db:seed` (set `ADMIN_EMAIL`/`ADMIN_PASSWORD` first — never ship
+   the `changeme` default).
+3. Set `AUTH_SECRET`, `NEXT_PUBLIC_SITE_URL` (production domain), and Resend keys if email
+   confirmations are wanted.

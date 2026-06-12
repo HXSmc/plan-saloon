@@ -45,6 +45,7 @@ const createSchema = z.object({
   bio_ar: z.string().trim().default(""),
   initials: z.string().trim().min(1).max(3),
   phone: z.string().trim().nullable().optional(),
+  imageUrl: z.string().url().nullable().optional().or(z.literal("")),
   specialties: z.array(z.string()).default([]),
   specialties_ar: z.array(z.string()).default([]),
   // Optional login credentials for the new barber.
@@ -74,6 +75,9 @@ export async function POST(req: NextRequest) {
   }
 
   const barber = await prisma.$transaction(async (tx) => {
+    // New barbers offer every existing service by default (mirrors how new
+    // services are linked to every barber).
+    const serviceIds = await tx.service.findMany({ select: { id: true } });
     const b = await tx.barber.create({
       data: {
         name: d.name,
@@ -84,9 +88,11 @@ export async function POST(req: NextRequest) {
         bio_ar: d.bio_ar,
         initials: d.initials.toUpperCase(),
         phone: d.phone || null,
+        imageUrl: d.imageUrl || null,
         specialties: JSON.stringify(d.specialties),
         specialties_ar: JSON.stringify(d.specialties_ar),
         workingHours: { create: DEFAULT_HOURS },
+        services: { create: serviceIds.map((s) => ({ serviceId: s.id })) },
       },
     });
     if (wantLogin) {

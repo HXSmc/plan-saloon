@@ -4,7 +4,11 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/guard";
 import { buildStartTime } from "@/lib/slots";
-import { APPOINTMENT_STATUSES, type AppointmentStatus } from "@/lib/types";
+import {
+  ACTIVE_STATUSES,
+  APPOINTMENT_STATUSES,
+  type AppointmentStatus,
+} from "@/lib/types";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -47,34 +51,63 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     if (status === "COMPLETED") {
       // Revenue captured at checkout: explicit value, else the service price.
       data.revenue = d.revenue ?? existing.service.price;
-    } else if (status === "CANCELLED" || status === "NO_SHOW") {
+    } else {
+      // Any non-completed status (incl. undoing a check-in) carries no revenue.
       data.revenue = 0;
     }
   } else if (d.revenue !== undefined) {
     data.revenue = d.revenue;
   }
 
-  // Reschedule.
+  // Reschedule and/or reassign — validate interval overlap, not just exact start.
+  const targetBarberId =
+    d.barberId && guard.user.role === "OWNER" ? d.barberId : existing.barberId;
+  let newStart = existing.startTime;
+  let newEnd = existing.endTime;
   if (d.date && d.value) {
-    const start = buildStartTime(d.date, d.value);
-    data.startTime = start;
-    data.endTime = new Date(start.getTime() + existing.service.durationMin * 60000);
+    newStart = buildStartTime(d.date, d.value);
+    newEnd = new Date(newStart.getTime() + existing.service.durationMin * 60000);
+    data.startTime = newStart;
+    data.endTime = newEnd;
   }
   if (d.barberId && guard.user.role === "OWNER") {
     data.barber = { connect: { id: d.barberId } };
   }
+  const movesInterval =
+    (d.date && d.value) || (d.barberId && guard.user.role === "OWNER");
 
   try {
-    const updated = await prisma.appointment.update({
-      where: { id },
-      data,
-      include: { service: true, barber: true },
-    });
+    // Clash check + update in one serializable transaction — the unique
+    // constraint alone can't see different-start overlaps.
+    const updated = await prisma.$transaction(
+      async (tx) => {
+        if (movesInterval) {
+          const clash = await tx.appointment.findFirst({
+            where: {
+              id: { not: id },
+              barberId: targetBarberId,
+              status: { in: ACTIVE_STATUSES },
+              startTime: { lt: newEnd },
+              endTime: { gt: newStart },
+            },
+            select: { id: true },
+          });
+          if (clash) throw new ClashError();
+        }
+        return tx.appointment.update({
+          where: { id },
+          data,
+          include: { service: true, barber: true },
+        });
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+    );
     return NextResponse.json(updated);
   } catch (err) {
     if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === "P2002"
+      err instanceof ClashError ||
+      (err instanceof Prisma.PrismaClientKnownRequestError &&
+        (err.code === "P2002" || err.code === "P2034"))
     ) {
       return NextResponse.json(
         { error: "That barber already has an appointment at that time." },
@@ -84,6 +117,8 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     throw err;
   }
 }
+
+class ClashError extends Error {}
 
 export async function DELETE(_req: NextRequest, { params }: Ctx) {
   const guard = await requireUser();

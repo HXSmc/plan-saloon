@@ -1,15 +1,16 @@
 // Action Plan Barbershop — data model.
-// SQLite for zero-setup local dev; Postgres-ready (swap `provider` + DATABASE_URL,
-// no model changes). SQLite has no enums/arrays — statuses are String unions
-// (see lib/types.ts) and list fields are JSON strings.
+// Postgres (Supabase). `url` should be the pooled (pgbouncer) connection string,
+// `directUrl` the direct connection used by migrations/db push.
+// Statuses remain String unions (see lib/types.ts) to keep app-level checks portable.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -23,20 +24,20 @@ model User {
 }
 
 model Barber {
-  id          String   @id @default(cuid())
-  name        String
-  name_ar     String
-  title       String
-  title_ar    String
-  bio         String
-  bio_ar      String
-  initials    String
-  imageUrl    String?
-  phone       String?
-  active      Boolean  @default(true)
-  specialties String   @default("[]") // JSON string of EN specialties
-  specialties_ar String @default("[]") // JSON string of AR specialties
-  createdAt   DateTime @default(now())
+  id             String  @id @default(cuid())
+  name           String
+  name_ar        String
+  title          String
+  title_ar       String
+  bio            String
+  bio_ar         String
+  initials       String
+  imageUrl       String?
+  phone          String?
+  active         Boolean @default(true)
+  specialties    String  @default("[]") // JSON string of EN specialties
+  specialties_ar String  @default("[]") // JSON string of AR specialties
+  createdAt      DateTime @default(now())
 
   user         User?
   services     BarberService[]
@@ -52,7 +53,9 @@ model Service {
   description    String
   description_ar String
   price          Int
-  icon           String   @default("✂️")
+  icon           String   @default("scissors") // key into the UI icon set
+  category       String   @default("Hair")
+  category_ar    String   @default("الشعر")
   popular        Boolean  @default(false)
   durationMin    Int      @default(45)
   active         Boolean  @default(true)
@@ -106,10 +109,14 @@ model Appointment {
   status        String   @default("CONFIRMED") // PENDING|CONFIRMED|COMPLETED|NO_SHOW|CANCELLED
   revenue       Int      @default(0)
   source        String   @default("ONLINE") // ONLINE | WALK_IN
+  // Unguessable token for the customer self-service page (/booking/[token]).
+  manageToken   String   @unique @default(cuid())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  // DB-level double-booking guard: one barber cannot hold two appts at one start.
+  // Exact-start collision guard; interval overlap is enforced in lib/booking.ts
+  // inside a serializable transaction.
   @@unique([barberId, startTime])
   @@index([startTime])
+  @@index([barberId, startTime, endTime])
 }

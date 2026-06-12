@@ -25,8 +25,11 @@ export async function GET(req: NextRequest) {
   end.setUTCDate(end.getUTCDate() + 1); // inclusive of the `to` day
 
   const appointments = await prisma.appointment.findMany({
+    // Interval overlap, not start-only: a late walk-in spilling past midnight
+    // must still show on the next day's calendar.
     where: {
-      startTime: { gte: start, lt: end },
+      startTime: { lt: end },
+      endTime: { gt: start },
       ...(barberId ? { barberId } : {}),
     },
     include: { service: true, barber: true },
@@ -41,7 +44,8 @@ const walkInSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   value: z.string().regex(/^\d{2}:\d{2}$/),
   customerName: z.string().trim().min(1),
-  customerPhone: z.string().trim().min(3),
+  // Walk-ins may have no phone — stored as "" (never a placeholder value).
+  customerPhone: z.string().trim().default(""),
   customerEmail: z.string().email().optional().or(z.literal("")),
 });
 
