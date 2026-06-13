@@ -1,9 +1,11 @@
 "use client";
 
+import { barberName, barberTitle } from "@/lib/data";
 import { useBooking } from "./BookingContext";
 import { useLang } from "../i18n/LanguageContext";
 import { useCatalog } from "./useCatalog";
 import GlowButton from "../GlowButton";
+import { Bolt, ChevronLeft } from "../icons";
 
 export default function StepBarber() {
   const { state, set, next, back } = useBooking();
@@ -11,7 +13,7 @@ export default function StepBarber() {
   const { barbers } = useCatalog();
 
   const choose = (barberId: string | null) => {
-    set({ barberId });
+    set({ barberId, time: null, timeLabel: null });
     next();
   };
 
@@ -27,14 +29,10 @@ export default function StepBarber() {
       <div className="mt-6 space-y-3">
         <button
           onClick={() => choose(null)}
-          className={`flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-all duration-200 ${
-            state.barberId === null && state.barberId !== undefined
-              ? "border-neon-yellow/60"
-              : "border-white/10"
-          } bg-white/[0.02] hover:border-neon-yellow/60 hover:bg-white/[0.04]`}
+          className="flex w-full items-center gap-4 rounded-lg border border-white/10 bg-white/[0.02] p-4 text-start transition-colors duration-200 hover:border-neon-yellow/60 hover:bg-white/[0.04]"
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-neon-yellow/15 text-xl">
-            ⚡
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-neon-yellow/15 text-neon-yellow">
+            <Bolt size={20} />
           </span>
           <span>
             <span className="block font-display font-bold text-cream">
@@ -52,21 +50,29 @@ export default function StepBarber() {
             <button
               key={b.id}
               onClick={() => choose(b.id)}
-              className={`flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-all duration-200 ${
+              className={`flex w-full items-center gap-4 rounded-lg border p-4 text-start transition-colors duration-200 ${
                 selected
-                  ? "border-neon-yellow bg-neon-yellow/10 shadow-glow-yellow"
+                  ? "border-neon-yellow bg-neon-yellow/10"
                   : "border-white/10 bg-white/[0.02] hover:border-neon-yellow/60 hover:bg-white/[0.04]"
               }`}
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-neon-yellow/40 font-display font-bold text-neon-yellow">
-                {b.initials}
-              </span>
+              {b.imageUrl ? (
+                <img
+                  src={b.imageUrl}
+                  alt=""
+                  className="h-12 w-12 rounded-full border border-neon-yellow/40 object-cover"
+                />
+              ) : (
+                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-neon-yellow/40 font-display font-bold text-neon-yellow">
+                  {b.initials}
+                </span>
+              )}
               <span>
                 <span className="block font-display font-bold text-cream">
-                  {lang === "ar" ? b.name_ar : b.name}
+                  {barberName(b, lang)}
                 </span>
                 <span className="block font-body text-xs text-cream-dim">
-                  {lang === "ar" ? b.title_ar : b.title}
+                  {barberTitle(b, lang)}
                 </span>
               </span>
             </button>
@@ -76,8 +82,8 @@ export default function StepBarber() {
 
       <div className="mt-6">
         <GlowButton variant="ghost" size="sm" onClick={back}>
-          <span className="rtl:hidden">←</span>
-          <span className="hidden rtl:inline">→</span> {t("booking.back")}
+          <ChevronLeft size={14} className="rtl:-scale-x-100" />
+          {t("booking.back")}
         </GlowButton>
       </div>
     </div>

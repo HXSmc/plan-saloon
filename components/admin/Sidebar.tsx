@@ -4,13 +4,14 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Logo from "../Logo";
+import { Grid, Calendar, Scissors, Users, Chart, Menu, X } from "../icons";
 
 const NAV = [
-  { href: "/admin", label: "Dashboard", icon: "▦", exact: true },
-  { href: "/admin/calendar", label: "Calendar", icon: "▤" },
-  { href: "/admin/staff", label: "Staff", icon: "✂" },
-  { href: "/admin/services", label: "Services", icon: "✦" },
-  { href: "/admin/analytics", label: "Analytics", icon: "▰" },
+  { href: "/admin", label: "Dashboard", Icon: Grid, exact: true },
+  { href: "/admin/calendar", label: "Calendar", Icon: Calendar },
+  { href: "/admin/staff", label: "Staff", Icon: Users },
+  { href: "/admin/services", label: "Services", Icon: Scissors },
+  { href: "/admin/analytics", label: "Analytics", Icon: Chart },
 ];
 
 export default function Sidebar({
@@ -40,10 +41,10 @@ export default function Sidebar({
         <Logo size={30} />
         <button
           onClick={() => setOpen((v) => !v)}
-          className="rounded-md border border-white/10 px-3 py-1.5 text-cream"
+          className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-cream"
           aria-label="Toggle menu"
         >
-          {open ? "✕" : "☰"}
+          {open ? <X size={16} /> : <Menu size={16} />}
         </button>
       </div>
 
@@ -58,21 +59,19 @@ export default function Sidebar({
           </div>
 
           <nav className="flex-1 space-y-1 px-3 py-4">
-            {items.map((n) => (
+            {items.map(({ href, label, Icon, exact }) => (
               <Link
-                key={n.href}
-                href={n.href}
+                key={href}
+                href={href}
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                  isActive(n.href, n.exact)
-                    ? "bg-neon-yellow/10 text-neon-yellow shadow-glow-yellow"
+                  isActive(href, exact)
+                    ? "bg-neon-yellow/10 text-neon-yellow"
                     : "text-cream-dim hover:bg-white/5 hover:text-cream"
                 }`}
               >
-                <span className="w-4 text-center" aria-hidden>
-                  {n.icon}
-                </span>
-                {n.label}
+                <Icon size={17} />
+                {label}
               </Link>
             ))}
           </nav>
@@ -80,7 +79,7 @@ export default function Sidebar({
           <div className="border-t border-white/10 px-4 py-4">
             <div className="mb-3">
               <p className="truncate text-xs text-cream">{email}</p>
-              <span className="mt-1 inline-block rounded-full bg-neon-yellow/15 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wider text-neon-yellow">
+              <span className="mt-1 inline-block rounded-full bg-neon-yellow/15 px-2 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wider text-neon-yellow">
                 {role}
               </span>
             </div>

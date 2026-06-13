@@ -15,6 +15,7 @@ const patchSchema = z.object({
   bio_ar: z.string().trim().optional(),
   initials: z.string().trim().min(1).max(3).optional(),
   phone: z.string().trim().nullable().optional(),
+  imageUrl: z.string().url().nullable().optional().or(z.literal("")),
   active: z.boolean().optional(),
   specialties: z.array(z.string()).optional(),
   specialties_ar: z.array(z.string()).optional(),
@@ -83,6 +84,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       ...(d.bio_ar !== undefined && { bio_ar: d.bio_ar }),
       ...(d.initials !== undefined && { initials: d.initials.toUpperCase() }),
       ...(d.phone !== undefined && { phone: d.phone || null }),
+      ...(d.imageUrl !== undefined && { imageUrl: d.imageUrl || null }),
       ...(d.active !== undefined && { active: d.active }),
       ...(d.specialties !== undefined && {
         specialties: JSON.stringify(d.specialties),

@@ -22,6 +22,8 @@ export type AdminService = {
   description_ar: string;
   price: number;
   icon: string;
+  category: string;
+  category_ar: string;
   popular: boolean;
   durationMin: number;
   active: boolean;
@@ -36,6 +38,7 @@ export type AdminBarber = {
   bio: string;
   bio_ar: string;
   initials: string;
+  imageUrl: string | null;
   phone: string | null;
   active: boolean;
   loginEmail: string | null;

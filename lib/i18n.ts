@@ -14,8 +14,13 @@ const en: Dict = {
   "cta.bookNow": "Book Now",
   "lang.switchTo": "العربية",
 
+  // Live status (computed from real hours)
+  "status.open": "Open now",
+  "status.until": "until",
+  "status.closed": "Closed now",
+  "status.opensAt": "opens at",
+
   // Hero
-  "hero.status": "Now Open · Walk-ins Welcome",
   "hero.headlineA": "Crafting Your",
   "hero.headlineHighlight": "Masterpiece",
   "hero.headlineB": ", One Cut at a Time.",
@@ -39,10 +44,7 @@ const en: Dict = {
     "Step off the street and into a room of stone, brass, and crystal chandeliers. Action Plan Barbershop blends old-world craft with a modern edge — every appointment a ritual, every finish razor-sharp.",
   "about.p2":
     "Our master barbers take the time to understand your style before the first snip. No rushing. No shortcuts. Just your masterpiece.",
-  "about.stat.years": "Years of Craft",
-  "about.stat.cuts": "Cuts & Counting",
-  "about.stat.rating": "Average Rating",
-  "about.interior": "Interior",
+  "about.reviews": "Read our reviews on Google",
 
   // Team
   "team.eyebrow": "The Crew",
@@ -56,7 +58,7 @@ const en: Dict = {
   "footer.ctaTitleB": "yet?",
   "footer.ctaButton": "Book Your Chair",
   "footer.blurb":
-    "Crafting your masterpiece, one cut at a time. Premium barbering in the heart of downtown.",
+    "Crafting your masterpiece, one cut at a time. Premium barbering on Dammam's western shore.",
   "footer.hours": "Hours",
   "footer.closed": "Closed",
   "footer.findUs": "Find Us",
@@ -71,7 +73,8 @@ const en: Dict = {
   "booking.step.time": "Time",
   "booking.step.details": "Details",
   "booking.step.done": "Done",
-  "booking.close": "Close",
+  "book.title": "Book your appointment",
+  "book.summary": "Your booking",
 
   // Booking — service step
   "book.service.title": "Choose your service",
@@ -91,10 +94,10 @@ const en: Dict = {
 
   // Booking — info step
   "book.info.title": "Your details",
-  "book.info.subcopy": "We'll send your confirmation here.",
+  "book.info.subcopy": "We'll confirm your booking with these.",
   "book.info.name": "Full Name",
   "book.info.phone": "Phone",
-  "book.info.email": "Email",
+  "book.info.email": "Email (optional)",
   "book.info.confirm": "Confirm Booking",
   "book.err.name": "Please enter your name.",
   "book.err.phone": "Enter a valid phone number.",
@@ -104,19 +107,42 @@ const en: Dict = {
   "book.done.submitting": "Securing your slot…",
   "book.done.title": "You're booked!",
   "book.done.subA": "A confirmation is on its way to",
-  "book.done.subPhone": "We'll text your confirmation shortly.",
+  "book.done.subPhone": "Show this screen when you arrive — or save your booking link below.",
   "book.done.row.service": "Service",
   "book.done.row.barber": "Barber",
   "book.done.row.when": "When",
   "book.done.row.name": "Name",
   "book.done.at": "at",
+  "book.done.manage": "Save this link to view, reschedule, or cancel anytime:",
+  "book.done.copy": "Copy link",
+  "book.done.copied": "Copied!",
   "book.done.another": "Book Another",
-  "book.done.done": "Done",
+  "book.done.backHome": "Back to Home",
   "book.err.title": "Something went wrong",
   "book.err.body": "We couldn't complete your booking. Please try again.",
   "book.err.conflictTitle": "Slot just taken",
   "book.err.conflictBody": "Someone grabbed that time. Pick another slot.",
   "book.err.pickAnother": "Pick another time",
+
+  // Manage booking (/booking/[token])
+  "manage.title": "Your booking",
+  "manage.notFound": "We couldn't find this booking.",
+  "manage.status.PENDING": "Pending",
+  "manage.status.CONFIRMED": "Confirmed",
+  "manage.status.COMPLETED": "Completed",
+  "manage.status.NO_SHOW": "No-show",
+  "manage.status.CANCELLED": "Cancelled",
+  "manage.reschedule": "Reschedule",
+  "manage.pickNew": "Pick a new time",
+  "manage.confirmNew": "Confirm new time",
+  "manage.rescheduled": "Your booking has been moved.",
+  "manage.cancel": "Cancel booking",
+  "manage.cancelAsk": "Cancel this booking?",
+  "manage.cancelYes": "Yes, cancel it",
+  "manage.cancelKeep": "Keep my booking",
+  "manage.cancelled": "This booking has been cancelled.",
+  "manage.past": "This booking has already taken place.",
+  "manage.backHome": "Back to home",
 };
 
 const ar: Dict = {
@@ -128,8 +154,13 @@ const ar: Dict = {
   "cta.bookNow": "احجز الآن",
   "lang.switchTo": "English",
 
+  // Live status
+  "status.open": "مفتوح الآن",
+  "status.until": "حتى",
+  "status.closed": "مغلق الآن",
+  "status.opensAt": "يفتح الساعة",
+
   // Hero
-  "hero.status": "مفتوح الآن · يُرحَّب بالزوار",
   "hero.headlineA": "نصنع",
   "hero.headlineHighlight": "تحفتك",
   "hero.headlineB": "، قصّة تلو الأخرى.",
@@ -153,10 +184,7 @@ const ar: Dict = {
     "اخطُ من الشارع إلى قاعة من الحجر والنحاس والثريات الكريستالية. يمزج صالون أكشن بلان بين الحرفة العريقة واللمسة العصرية — كل موعد طقسٌ خاص، وكل لمسةٍ حادّةٌ كالموسى.",
   "about.p2":
     "يأخذ حلّاقونا المحترفون وقتهم لفهم أسلوبك قبل أول قصّة. لا استعجال. لا اختصارات. تحفتك فقط.",
-  "about.stat.years": "سنوات من الحرفة",
-  "about.stat.cuts": "قصّة وأكثر",
-  "about.stat.rating": "متوسط التقييم",
-  "about.interior": "المكان",
+  "about.reviews": "اقرأ تقييماتنا على Google",
 
   // Team
   "team.eyebrow": "الطاقم",
@@ -169,8 +197,7 @@ const ar: Dict = {
   "footer.ctaHighlight": "قصّة",
   "footer.ctaTitleB": "لك؟",
   "footer.ctaButton": "احجز كرسيك",
-  "footer.blurb":
-    "نصنع تحفتك، قصّة تلو الأخرى. حلاقة فاخرة في قلب المدينة.",
+  "footer.blurb": "نصنع تحفتك، قصّة تلو الأخرى. حلاقة فاخرة على شاطئ الدمام الغربي.",
   "footer.hours": "ساعات العمل",
   "footer.closed": "مغلق",
   "footer.findUs": "موقعنا",
@@ -185,7 +212,8 @@ const ar: Dict = {
   "booking.step.time": "الوقت",
   "booking.step.details": "البيانات",
   "booking.step.done": "تم",
-  "booking.close": "إغلاق",
+  "book.title": "احجز موعدك",
+  "book.summary": "حجزك",
 
   // Booking — service step
   "book.service.title": "اختر خدمتك",
@@ -205,10 +233,10 @@ const ar: Dict = {
 
   // Booking — info step
   "book.info.title": "بياناتك",
-  "book.info.subcopy": "سنرسل تأكيد الحجز إلى هنا.",
+  "book.info.subcopy": "سنؤكّد حجزك عبر هذه البيانات.",
   "book.info.name": "الاسم الكامل",
   "book.info.phone": "الهاتف",
-  "book.info.email": "البريد الإلكتروني",
+  "book.info.email": "البريد الإلكتروني (اختياري)",
   "book.info.confirm": "تأكيد الحجز",
   "book.err.name": "يرجى إدخال اسمك.",
   "book.err.phone": "أدخل رقم هاتف صحيح.",
@@ -218,19 +246,42 @@ const ar: Dict = {
   "book.done.submitting": "نؤكّد حجز موعدك…",
   "book.done.title": "تم حجزك!",
   "book.done.subA": "تأكيد الحجز في طريقه إلى",
-  "book.done.subPhone": "سنرسل تأكيد الحجز عبر رسالة قريبًا.",
+  "book.done.subPhone": "أظهر هذه الشاشة عند وصولك — أو احفظ رابط حجزك أدناه.",
   "book.done.row.service": "الخدمة",
   "book.done.row.barber": "الحلّاق",
   "book.done.row.when": "الموعد",
   "book.done.row.name": "الاسم",
   "book.done.at": "الساعة",
+  "book.done.manage": "احفظ هذا الرابط لعرض حجزك أو تعديله أو إلغائه في أي وقت:",
+  "book.done.copy": "نسخ الرابط",
+  "book.done.copied": "تم النسخ!",
   "book.done.another": "احجز موعدًا آخر",
-  "book.done.done": "تم",
+  "book.done.backHome": "العودة للرئيسية",
   "book.err.title": "حدث خطأ ما",
   "book.err.body": "تعذّر إتمام الحجز. يرجى المحاولة مرة أخرى.",
   "book.err.conflictTitle": "الموعد محجوز للتو",
   "book.err.conflictBody": "حجز أحدهم هذا الوقت. اختر موعدًا آخر.",
   "book.err.pickAnother": "اختر وقتًا آخر",
+
+  // Manage booking (/booking/[token])
+  "manage.title": "حجزك",
+  "manage.notFound": "لم نعثر على هذا الحجز.",
+  "manage.status.PENDING": "قيد التأكيد",
+  "manage.status.CONFIRMED": "مؤكَّد",
+  "manage.status.COMPLETED": "مكتمل",
+  "manage.status.NO_SHOW": "لم يحضر",
+  "manage.status.CANCELLED": "ملغى",
+  "manage.reschedule": "تغيير الموعد",
+  "manage.pickNew": "اختر وقتًا جديدًا",
+  "manage.confirmNew": "تأكيد الوقت الجديد",
+  "manage.rescheduled": "تم نقل حجزك.",
+  "manage.cancel": "إلغاء الحجز",
+  "manage.cancelAsk": "هل تريد إلغاء هذا الحجز؟",
+  "manage.cancelYes": "نعم، ألغِه",
+  "manage.cancelKeep": "أبقِ حجزي",
+  "manage.cancelled": "تم إلغاء هذا الحجز.",
+  "manage.past": "هذا الحجز انتهى بالفعل.",
+  "manage.backHome": "العودة للرئيسية",
 };
 
 export const dict: Record<Lang, Dict> = { en, ar };

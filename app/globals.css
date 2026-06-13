@@ -33,11 +33,6 @@ body {
 }
 
 @layer utilities {
-  /* Reusable neon-yellow glow. */
-  .glow-yellow {
-    box-shadow: 0 0 12px rgba(255, 209, 26, 0.55),
-      0 0 28px rgba(255, 209, 26, 0.3);
-  }
   .glow-text-yellow {
     text-shadow: 0 0 8px rgba(255, 209, 26, 0.55),
       0 0 20px rgba(255, 209, 26, 0.35);

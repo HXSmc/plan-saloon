@@ -16,7 +16,9 @@ const schema = z.object({
   description: z.string().trim().default(""),
   description_ar: z.string().trim().default(""),
   price: z.number().int().min(0),
-  icon: z.string().default("✂️"),
+  icon: z.string().default("scissors"),
+  category: z.string().trim().min(1).default("Hair"),
+  category_ar: z.string().trim().min(1).default("الشعر"),
   popular: z.boolean().default(false),
   durationMin: z.number().int().min(15).max(240).default(45),
 });

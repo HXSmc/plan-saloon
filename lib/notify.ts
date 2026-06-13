@@ -11,7 +11,16 @@ export type BookingNotification = {
   barberName: string;
   startTime: Date;
   price: number;
+  manageToken: string;
 };
+
+/** Absolute URL of the customer self-service page for a booking. */
+export function manageUrl(token: string): string {
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+    "http://localhost:3000";
+  return `${base}/booking/${token}`;
+}
 
 interface NotifyAdapter {
   send(n: BookingNotification): Promise<void>;
@@ -38,6 +47,7 @@ const consoleAdapter: NotifyAdapter = {
         `  Service  : ${n.serviceName} — SAR ${n.price}`,
         `  Barber   : ${n.barberName}`,
         `  When     : ${formatWhen(n.startTime)}`,
+        `  Manage   : ${manageUrl(n.manageToken)}`,
         n.customerEmail ? `  Email    : ${n.customerEmail}` : null,
         "───────────────────────────────────────────",
       ]
@@ -70,6 +80,10 @@ const resendAdapter: NotifyAdapter = {
             <tr><td style="padding:6px 0;color:#cfc8b8">Barber</td><td style="text-align:right">${n.barberName}</td></tr>
             <tr><td style="padding:6px 0;color:#cfc8b8">When</td><td style="text-align:right">${when}</td></tr>
           </table>
+          <a href="${manageUrl(n.manageToken)}"
+             style="display:block;margin-top:24px;padding:12px;text-align:center;background:#ffd11a;color:#0e1013;border-radius:8px;font-family:Arial,sans-serif;font-weight:700;text-decoration:none">
+            View, reschedule, or cancel
+          </a>
         </div>`,
     });
   },
