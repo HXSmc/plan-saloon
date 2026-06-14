@@ -229,4 +229,3 @@ real backend:
    confirmations are wanted.
 
 
-------supabase password: kivqov-haqfak-jAjwe6-------------
