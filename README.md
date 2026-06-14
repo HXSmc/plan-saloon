@@ -227,3 +227,6 @@ real backend:
    the `changeme` default).
 3. Set `AUTH_SECRET`, `NEXT_PUBLIC_SITE_URL` (production domain), and Resend keys if email
    confirmations are wanted.
+
+
+------supabase password: kivqov-haqfak-jAjwe6-------------
